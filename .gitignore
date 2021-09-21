@@ -1,3 +1,9 @@
+# custom
+.DS_Store
+bin/
+__internal/
+lib/
+
 # Compiled Object files
 *.o
 *.obj

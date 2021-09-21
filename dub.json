@@ -1,0 +1,13 @@
+{
+	"authors": [
+		"rillki"
+	],
+	"copyright": "Copyright © 2021, rillki",
+    "targetPath": "bin",
+    "dependencies": {
+		"printed": "~>1.1.3"
+	},
+	"description": "Image to PDF converter",
+	"license": "MIT",
+	"name": "img2pdf"
+}
