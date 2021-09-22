@@ -1,5 +1,5 @@
 # img2pdf
-Image to PDF converter utility written in D programming language.
+Image to PDF conversion utility written in D programming language.
 
 <img src="assets/screenshot.jpeg">
 
