@@ -4,13 +4,16 @@ import std;
 
 void main(string[] args) {
 	if(args.length < 2) {
-		("\n========================================================\n" ~
-			"img2pdf  v1.0 -- Image to PDF converter.\n" ~
-			"--------------------------------------------------------\n" ~
-			"USAGE:\n\timg2pdf [path] [imgs] [file] [verbose]\n" ~
-			"DEFAULTS:\n\t[path]\t  cwd/ (\'/\' path identifier)\n\t[imgs]\t  all *.jpg, *.png in path\n\t[file]\t  path/output.pdf\n\t[verbose] -v or --verbose (false)\n" ~
+		("\n=========================================================\n" ~
+			"img2pdf  v1.1 -- Image to PDF converter.\n" ~
+			"---------------------------------------------------------\n" ~
+			"USAGE:\n\timg2pdf [path] [imgs] [file] [stretch]\n" ~
+			"DEFAULTS:\n\t[path]\t  cwd/ (\'/\' path identifier)" ~ 
+			"\n\t[imgs]\t  all *.jpg, *.png in path\n\t[file]\t  path/output.pdf" ~
+			"\n\t[stretch] -strue (stretch img to PDF page size)\n" ~
 			"EXAMPLE:\n\timg2pdf ../temp/ img1.png,img2.jpg myImages.pdf\n" ~
-			"========================================================\n"
+			"\t\t-sfalse\n" ~
+			"=========================================================\n"
 		).writeln;
 		return;
 	}
@@ -27,9 +30,6 @@ void main(string[] args) {
 		);
 	};
 
-	// verbose output
-	immutable verbose = !args.filter!(a => a.canFind("verbose")).array.empty;
-
 	// find path
 	immutable path = findArg("/", getcwd);
 	if(!path.exists) {
@@ -44,27 +44,39 @@ void main(string[] args) {
 	auto arg_images = args.filter!(a => a.canFind(".jpg", ".jpeg", ".png")).array;
 	immutable images = (
 		arg_images.empty ? 
-		path.listdir.filter!(a => a.canFind(".jpg", ".jpeg", ".png")).array.sort!("a < b").array :
-		arg_images[0].splitter(',').array
+		path.listdir.filter!(a => a.canFind(".jpg", ".jpeg", ".png")).array.sort!("a < b").map!(a => path.buildPath(a)).array :
+		arg_images[0].splitter(',').map!(a => path.buildPath(a)).array // add splitter.array if failes to compile
 	).to!(immutable string[]);
+	
 
 	// if no images are found, exit
 	if(images.empty) {
-		writefln("\n#img2pdf: images not found!\n");
+		writefln("\n#img2pdf: no images found!\n");
 		return;
 	}
 
-	// convert images
+	// find if stretch argument is false
+	immutable stretch = findArg("sfalse", null).empty;
+
+	// start
 	writefln("\n#img2pdf: starting conversion...\n");
-	if(verbose) {
-		// print all images that don't exist
-		images.filter!(a => !path.buildPath(a).exists).array.each!(a => writefln("#img2pdf: <%s> does not exist!", a));
-	}
-	img2pdf(pdfName, images.map!(a => path.buildPath(a)).array, verbose);
+	
+	// convert images
+	img2pdf(pdfName, images, stretch);
+	
+	// end
 	writefln("\n#img2pdf: finished...\n");
 }
 
-void img2pdf(const string pdfName, const string[] imgs, const bool verbose) {
+/+
+Converts images to a PDF file
+
+Params:
+	pdfName = pdf file name
+	imgs = an array image names including the path
+	stretchToPDFSize = stretches image to pdf page width and height, `true` by default 
++/
+void img2pdf(const string pdfName, const string[] imgs, const bool stretchToPDFSize = true) {
 	import std.file: write;
 	import printed.canvas: PDFDocument, IRenderingContext2D, Image;
 	
@@ -72,26 +84,63 @@ void img2pdf(const string pdfName, const string[] imgs, const bool verbose) {
 	auto context = cast(IRenderingContext2D)(pdf);
 	
 	// print images to pdf
-	foreach(img; imgs) {
+	foreach(i, img; imgs) {
 		// checks if image exists
-		if(!img.exists) { continue; }
+		if(!img.exists) { 
+			writefln("#img2pdf: (%s) <%s> does not exist! Skipping...", i, img);
+			continue; 
+		}
 
-		// open image
+		// opens an image
 		auto currentImg = new Image(img);
 		
-		// print image to pdf
-		context.drawImage(currentImg, 0, 0, context.pageWidth, context.pageHeight);
+		// prints an image to a blank pdf page
+		if(stretchToPDFSize) {
+			context.drawImage(currentImg, 0, 0, context.pageWidth, context.pageHeight);
+		} else {
+			context.drawImage(currentImg, 0, 0);
+		}
 		
-		// create new page
+		writefln("#img2pdf: (%s) <%s> converted!", i, img.splitter(pathSeparator).array[$-1]);
+		
+		// creates a new page
 		context.newPage();
 	}
 	
+	// writes data to pdf file
+	writefln("#img2pdf: saving <%s>", pdfName);
 	pdfName.write(pdf.bytes);
 }
 
+/+
+List all files found in a directory
+
+Params:
+	dir = directory to inspect
+
+Returns: an array of file names
++/
 string[] listdir(string dir) {
     return dirEntries(dir, SpanMode.shallow)
         .filter!(a => a.isFile)
         .map!(a => baseName(a.name))
         .array;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
