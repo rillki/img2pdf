@@ -37,4 +37,4 @@ dub -build=release
 Your will find the binary in the `bin/` folder. Add it to your path. Enjoy!
 
 ### LICENSE
-All code is licensed under MIT license.
+All code is licensed under [MIT](https://github.com/rillki/img2pdf/blob/main/LICENSE) license.
