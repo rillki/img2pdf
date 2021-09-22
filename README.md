@@ -25,8 +25,8 @@ EXAMPLE:
 
 ### Building
 #### Required
-* D compiler
-* DUB package manager
+* [D compiler](https://dlang.org/download)
+* [DUB](https://dub.pm) package manager
 
 #### Compiling
 ```
