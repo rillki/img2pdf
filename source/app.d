@@ -5,7 +5,7 @@ import std;
 void main(string[] args) {
 	if(args.length < 2) {
 		("\n=========================================================\n" ~
-			"img2pdf  v1.1 -- Image to PDF converter.\n" ~
+			"img2pdf  v1.2 -- Image to PDF converter.\n" ~
 			"---------------------------------------------------------\n" ~
 			"USAGE:\n\timg2pdf [path] [imgs] [file] [stretch]\n" ~
 			"DEFAULTS:\n\t[path]\t  cwd/ (\'/\' path identifier)" ~ 
@@ -85,6 +85,11 @@ void img2pdf(const string pdfName, const string[] imgs, const bool stretchToPDFS
 	
 	// print images to pdf
 	foreach(i, img; imgs) {
+		// creates a new page
+		if(i > 0) {
+			context.newPage();
+		}
+
 		// checks if image exists
 		if(!img.exists) { 
 			writefln("#img2pdf: (%s) <%s> does not exist! Skipping...", i, img);
@@ -102,9 +107,6 @@ void img2pdf(const string pdfName, const string[] imgs, const bool stretchToPDFS
 		}
 		
 		writefln("#img2pdf: (%s) <%s> converted!", i, img.splitter(pathSeparator).array[$-1]);
-		
-		// creates a new page
-		context.newPage();
 	}
 	
 	// writes data to pdf file
