@@ -32,7 +32,7 @@ EXAMPLE:
 ```
 git clone https://github.com/rillki/img2pdf.git
 cd img2pdf
-dub -build=release
+dub --build=release
 ```
 Your will find the binary in the `bin/` folder. Add it to your path. Enjoy!
 
