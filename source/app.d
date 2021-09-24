@@ -75,7 +75,7 @@ void main(string[] args) {
 	writefln("\n#img2pdf: finished...\n");
 }
 
-/+
+/++
 Converts images to a PDF file
 
 Params:
@@ -121,7 +121,7 @@ void img2pdf(const string pdfDocumentName, const string[] images, const bool str
 	pdfDocumentName.write(pdf.bytes);
 }
 
-/+
+/++
 List all files found in a directory
 
 Params:
