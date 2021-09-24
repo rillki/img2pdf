@@ -7,16 +7,16 @@ void main(string[] args) {
 		("\n=========================================================\n" ~
 			"img2pdf  v1.3 -- Image to PDF converter.\n" ~
 			"---------------------------------------------------------\n" ~
-			"USAGE:\n\timg2pdf [path] [imgs] [file] {options}\n" ~
+			"USAGE:\n\timg2pdf [path] [images] [file] {options}\n" ~
 			"\nOPTIONS:\n" ~ 
 			"\t[stretch]   stretch img to PDF page size\n" ~
 			"\t\t    -strue, -sfalse\n" ~
-			"\t[order]\t    sort files (ascending, descending)\n" ~
+			"\t[order]     sort files (ascending, descending)\n" ~
 			"\t\t    -asc, -desc\n" ~
 			"\nDEFAULTS:" ~ 
-			"\n\t[path]\t   cwd/ (\'/\' or \'\\\\\' path identifier)" ~
-			"\n\t[imgs]\t   all *.jpg, *.png in [path]" ~
-			"\n\t[file]\t   [path]/output.pdf" ~
+			"\n\t[path]     cwd/ (\'/\' or \'\\\\\' path identifier)" ~
+			"\n\t[images]   all *.jpg, *.png in [path]" ~
+			"\n\t[file]     [path]/output.pdf" ~
 			"\n\t[stretch]  -strue" ~
 			"\n\t[order]    -asc\n" ~
 			"\nEXAMPLE:\n\timg2pdf ../temp/ img1.png,img2.jpg myImages.pdf\n" ~
@@ -45,12 +45,10 @@ void main(string[] args) {
 		return;
 	}
 	
-	// find pdfName
-	immutable pdfName = path.buildPath(findArg(".pdf", "output.pdf"));
-
-	// find if stretch argument is false
-	immutable stretch = findArg("-sfalse", null).empty;
-	immutable sortOrder = findArg("-desc", null).empty;
+	// find pdf document name, stretch image to pdf, file sorting order
+	immutable pdfDocumentName = path.buildPath(findArg(".pdf", "output.pdf"));
+	immutable stretchToPDFSize = findArg("-sfalse", null).empty;
+	immutable sortAscending = findArg("-desc", null).empty;
 
 	// find images
 	auto arg_images = args.filter!(a => a.canFind(".jpg", ".jpeg", ".png")).array;
@@ -71,7 +69,7 @@ void main(string[] args) {
 	writefln("\n#img2pdf: starting conversion...\n");
 	
 	// convert images
-	img2pdf(pdfName, (sortOrder ? images : images.dup.to!(string[]).reverse), stretch);
+	img2pdf(pdfDocumentName, (sortAscending ? images : images.dup.to!(string[]).reverse), stretchToPDFSize);
 	
 	// end
 	writefln("\n#img2pdf: finished...\n");
@@ -81,19 +79,19 @@ void main(string[] args) {
 Converts images to a PDF file
 
 Params:
-	pdfName = pdf file name
-	imgs = an array image names including the path
+	pdfDocumentName = pdf file name
+	images = an array image names including the path
 	stretchToPDFSize = stretches image to pdf page width and height, `true` by default 
 +/
-void img2pdf(const string pdfName, const string[] imgs, const bool stretchToPDFSize = true) {
+void img2pdf(const string pdfDocumentName, const string[] images, const bool stretchToPDFSize = true) {
 	import std.file: write;
 	import printed.canvas: PDFDocument, IRenderingContext2D, Image;
 	
 	auto pdf = new PDFDocument();
 	auto context = cast(IRenderingContext2D)(pdf);
 	
-	// print images to pdf
-	foreach(i, img; imgs) {
+	// prints images to pdf
+	foreach(i, img; images) {
 		// creates a new page
 		if(i > 0) {
 			context.newPage();
@@ -119,8 +117,8 @@ void img2pdf(const string pdfName, const string[] imgs, const bool stretchToPDFS
 	}
 	
 	// writes data to pdf file
-	writefln("#img2pdf: saving <%s>", pdfName);
-	pdfName.write(pdf.bytes);
+	writefln("#img2pdf: saving <%s>", pdfDocumentName);
+	pdfDocumentName.write(pdf.bytes);
 }
 
 /+
