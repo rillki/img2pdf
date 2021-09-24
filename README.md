@@ -57,6 +57,8 @@ dub --build=release
 
 Your will find the binary in the `bin/` folder. Add it to your `PATH` to use it freely. 
 
+Here is an article on how to add an executable binary to `PATH` on [Windows 10](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53).
+
 ### LICENSE
 All code is licensed under [MIT](https://github.com/rillki/img2pdf/blob/main/LICENSE) license.
 
