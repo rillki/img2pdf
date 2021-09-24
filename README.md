@@ -46,7 +46,7 @@ When downloading DMD, choose `exe`. It is the official D `installer` that will i
 ```
 git clone https://github.com/rillki/img2pdf.git
 ```
-2. Open your terminal or command line and `cd` to `img2pdf` folder:
+2. Open your terminal or command line and go to `img2pdf` folder:
 ```
 cd img2pdf
 ```
