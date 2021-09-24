@@ -5,14 +5,22 @@ import std;
 void main(string[] args) {
 	if(args.length < 2) {
 		("\n=========================================================\n" ~
-			"img2pdf  v1.2 -- Image to PDF converter.\n" ~
+			"img2pdf  v1.3 -- Image to PDF converter.\n" ~
 			"---------------------------------------------------------\n" ~
-			"USAGE:\n\timg2pdf [path] [imgs] [file] [stretch]\n" ~
-			"DEFAULTS:\n\t[path]\t  cwd/ (\'/\' path identifier)" ~ 
-			"\n\t[imgs]\t  all *.jpg, *.png in path\n\t[file]\t  path/output.pdf" ~
-			"\n\t[stretch] -strue (stretch img to PDF page size)\n" ~
-			"EXAMPLE:\n\timg2pdf ../temp/ img1.png,img2.jpg myImages.pdf\n" ~
-			"\t\t-sfalse\n" ~
+			"USAGE:\n\timg2pdf [path] [imgs] [file] {options}\n" ~
+			"\nOPTIONS:\n" ~ 
+			"\t[stretch]   stretch img to PDF page size\n" ~
+			"\t\t    -strue, -sfalse\n" ~
+			"\t[order]\t    sort files (ascending, descending)\n" ~
+			"\t\t    -asc, -desc\n" ~
+			"\nDEFAULTS:" ~ 
+			"\n\t[path]\t   cwd/ (\'/\' or \'\\\\\' path identifier)" ~
+			"\n\t[imgs]\t   all *.jpg, *.png in [path]" ~
+			"\n\t[file]\t   [path]/output.pdf" ~
+			"\n\t[stretch]  -strue" ~
+			"\n\t[order]    -asc\n" ~
+			"\nEXAMPLE:\n\timg2pdf ../temp/ img1.png,img2.jpg myImages.pdf\n" ~
+			"\t\t-sfalse -asc\n" ~
 			"=========================================================\n"
 		).writeln;
 		return;
@@ -31,7 +39,7 @@ void main(string[] args) {
 	};
 
 	// find path
-	immutable path = findArg("/", getcwd);
+	immutable path = findArg(dirSeparator, getcwd);
 	if(!path.exists) {
 		writefln("\n#img2pdf: directory <%s> is does not exist!\n", path);
 		return;
@@ -39,6 +47,10 @@ void main(string[] args) {
 	
 	// find pdfName
 	immutable pdfName = path.buildPath(findArg(".pdf", "output.pdf"));
+
+	// find if stretch argument is false
+	immutable stretch = findArg("-sfalse", null).empty;
+	immutable sortOrder = findArg("-desc", null).empty;
 
 	// find images
 	auto arg_images = args.filter!(a => a.canFind(".jpg", ".jpeg", ".png")).array;
@@ -55,14 +67,11 @@ void main(string[] args) {
 		return;
 	}
 
-	// find if stretch argument is false
-	immutable stretch = findArg("sfalse", null).empty;
-
 	// start
 	writefln("\n#img2pdf: starting conversion...\n");
 	
 	// convert images
-	img2pdf(pdfName, images, stretch);
+	img2pdf(pdfName, (sortOrder ? images : images.dup.to!(string[]).reverse), stretch);
 	
 	// end
 	writefln("\n#img2pdf: finished...\n");
