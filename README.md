@@ -6,7 +6,7 @@ Image to PDF conversion utility written in D programming language. [Download](ht
 ### Usage
 ```
 =========================================================
-img2pdf  v1.3 -- Image to PDF converter.
+img2pdf  v1.4 -- Image to PDF converter.
 ---------------------------------------------------------
 USAGE:
 	img2pdf [path] [images] [file] {options}
