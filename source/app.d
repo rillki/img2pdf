@@ -5,7 +5,7 @@ import std;
 void main(string[] args) {
 	if(args.length < 2) {
 		("\n=========================================================\n" ~
-			"img2pdf  v1.3 -- Image to PDF converter.\n" ~
+			"img2pdf  v1.4 -- Image to PDF converter.\n" ~
 			"---------------------------------------------------------\n" ~
 			"USAGE:\n\timg2pdf [path] [images] [file] {options}\n" ~
 			"\nOPTIONS:\n" ~ 
@@ -103,8 +103,14 @@ void img2pdf(const string pdfDocumentName, const string[] images, const bool str
 			continue; 
 		}
 
-		// opens an image
-		auto currentImg = new Image(img);
+		// opens an image (skips the image upon failure)
+		Image currentImg;
+		try {
+			currentImg = new Image(img);
+		} catch(Exception e) {
+			writefln("#img2pdf: (%s) <%s> failed to open; %s", i, img, e.msg);
+			continue;
+		}
 		
 		// prints an image to a blank pdf page
 		if(stretchToPDFSize) {
@@ -118,7 +124,11 @@ void img2pdf(const string pdfDocumentName, const string[] images, const bool str
 	
 	// writes data to pdf file
 	writefln("#img2pdf: saving <%s>", pdfDocumentName);
-	pdfDocumentName.write(pdf.bytes);
+	try {
+		pdfDocumentName.write(pdf.bytes);
+	} catch(Exception e) {
+		writefln("#img2pdf: failed to save <%s>; %s", pdfDocumentName, e.msg);		
+	}
 }
 
 /++
