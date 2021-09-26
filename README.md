@@ -6,7 +6,7 @@ Image to PDF conversion utility written in D programming language. [Download](ht
 ### Usage
 ```
 =========================================================
-img2pdf  v1.4 -- Image to PDF converter.
+img2pdf  v1.5 -- Image to PDF converter.
 ---------------------------------------------------------
 USAGE:
 	img2pdf [path] [images] [file] {options}
@@ -16,6 +16,8 @@ OPTIONS:
 		    -strue, -sfalse
 	[order]     sort files (ascending, descending)
 		    -asc, -desc
+	[orient]    orientation (portrait, landscape)
+		    -portrait, -landscape
 
 DEFAULTS:
 	[path]     cwd/ ('/' or '\\' path identifier)
@@ -23,10 +25,11 @@ DEFAULTS:
 	[file]     [path]/output.pdf
 	[stretch]  -strue
 	[order]    -asc
+	[orient]   -portrait
 
 EXAMPLE:
 	img2pdf ../temp/ img1.png,img2.jpg myImages.pdf
-		-sfalse -asc
+		-sfalse -asc -portrait
 =========================================================
 ```
 
