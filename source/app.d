@@ -1,11 +1,12 @@
 module app;
 
 import std;
+import pdfed;
 
 void main(string[] args) {
 	if(args.length < 2) {
 		("\n=========================================================\n" ~
-			"img2pdf  v1.4 -- Image to PDF converter.\n" ~
+			"img2pdf  v1.5 -- Image to PDF converter.\n" ~
 			"---------------------------------------------------------\n" ~
 			"USAGE:\n\timg2pdf [path] [images] [file] {options}\n" ~
 			"\nOPTIONS:\n" ~ 
@@ -13,14 +14,17 @@ void main(string[] args) {
 			"\t\t    -strue, -sfalse\n" ~
 			"\t[order]     sort files (ascending, descending)\n" ~
 			"\t\t    -asc, -desc\n" ~
+			"\t[orient]    orientation (portrait, landscape)\n" ~
+			"\t\t    -portrait, -landscape\n" ~
 			"\nDEFAULTS:" ~ 
 			"\n\t[path]     cwd/ (\'/\' or \'\\\\\' path identifier)" ~
 			"\n\t[images]   all *.jpg, *.png in [path]" ~
 			"\n\t[file]     [path]/output.pdf" ~
 			"\n\t[stretch]  -strue" ~
-			"\n\t[order]    -asc\n" ~
+			"\n\t[order]    -asc" ~
+			"\n\t[orient]   -portrait\n" ~
 			"\nEXAMPLE:\n\timg2pdf ../temp/ img1.png,img2.jpg myImages.pdf\n" ~
-			"\t\t-sfalse -asc\n" ~
+			"\t\t-sfalse -asc -portrait\n" ~
 			"=========================================================\n"
 		).writeln;
 		return;
@@ -45,17 +49,18 @@ void main(string[] args) {
 		return;
 	}
 	
-	// find pdf document name, stretch image to pdf, file sorting order
+	// find pdf document name, stretch image to pdf, file sorting order, orientation
 	immutable pdfDocumentName = path.buildPath(findArg(".pdf", "output.pdf"));
 	immutable stretchToPDFSize = findArg("-sfalse", null).empty;
 	immutable sortAscending = findArg("-desc", null).empty;
+	immutable orientPortrait = findArg("-landscape", null).empty;
 
 	// find images
 	auto arg_images = args.filter!(a => a.canFind(".jpg", ".jpeg", ".png")).array;
 	immutable images = (
 		arg_images.empty ? 
 		path.listdir.filter!(a => a.canFind(".jpg", ".jpeg", ".png")).array.sort!("a < b").map!(a => path.buildPath(a)).array :
-		arg_images[0].splitter(',').map!(a => path.buildPath(a)).array // add splitter.array if failes to compile
+		arg_images[0].splitter(',').map!(a => path.buildPath(a)).array
 	).to!(immutable string[]);
 	
 
@@ -69,66 +74,15 @@ void main(string[] args) {
 	writefln("\n#img2pdf: starting conversion...\n");
 	
 	// convert images
-	img2pdf(pdfDocumentName, (sortAscending ? images : images.dup.to!(string[]).reverse), stretchToPDFSize);
+	img2pdf(
+		pdfDocumentName, 
+		(sortAscending ? images : images.dup.to!(string[]).reverse), 
+		stretchToPDFSize,
+		orientPortrait
+	);
 	
 	// end
 	writefln("\n#img2pdf: finished...\n");
-}
-
-/++
-Converts images to a PDF file
-
-Params:
-	pdfDocumentName = pdf file name
-	images = an array image names including the path
-	stretchToPDFSize = stretches image to pdf page width and height, `true` by default 
-+/
-void img2pdf(const string pdfDocumentName, const string[] images, const bool stretchToPDFSize = true) {
-	import std.file: write;
-	import printed.canvas: PDFDocument, IRenderingContext2D, Image;
-	
-	auto pdf = new PDFDocument();
-	auto context = cast(IRenderingContext2D)(pdf);
-	
-	// prints images to pdf
-	foreach(i, img; images) {
-		// creates a new page
-		if(i > 0) {
-			context.newPage();
-		}
-
-		// checks if image exists
-		if(!img.exists) { 
-			writefln("#img2pdf: (%s) <%s> does not exist! Skipping...", i, img);
-			continue; 
-		}
-
-		// opens an image (skips the image upon failure)
-		Image currentImg;
-		try {
-			currentImg = new Image(img);
-		} catch(Exception e) {
-			writefln("#img2pdf: (%s) <%s> failed to open; %s", i, img, e.msg);
-			continue;
-		}
-		
-		// prints an image to a blank pdf page
-		if(stretchToPDFSize) {
-			context.drawImage(currentImg, 0, 0, context.pageWidth, context.pageHeight);
-		} else {
-			context.drawImage(currentImg, 0, 0);
-		}
-		
-		writefln("#img2pdf: (%s) <%s> converted!", i, img.splitter(pathSeparator).array[$-1]);
-	}
-	
-	// writes data to pdf file
-	writefln("#img2pdf: saving <%s>", pdfDocumentName);
-	try {
-		pdfDocumentName.write(pdf.bytes);
-	} catch(Exception e) {
-		writefln("#img2pdf: failed to save <%s>; %s", pdfDocumentName, e.msg);		
-	}
 }
 
 /++
@@ -139,15 +93,12 @@ Params:
 
 Returns: an array of file names
 +/
-string[] listdir(string dir) {
+string[] listdir(const string dir) {
     return dirEntries(dir, SpanMode.shallow)
         .filter!(a => a.isFile)
         .map!(a => baseName(a.name))
         .array;
 }
-
-
-
 
 
 
