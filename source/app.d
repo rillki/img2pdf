@@ -22,19 +22,19 @@ void main(string[] args) {
 			"---------------------------------------------------------\n" ~
 			"USAGE:\n\timg2pdf [path] [images] [file] {options}\n" ~
 			"\nOPTIONS:\n" ~ 
-			"\t[stretch]   stretch img to PDF page size\n" ~
+			"\t{stretch}   stretch img to PDF page size\n" ~
 			"\t\t    -strue, -sfalse\n" ~
-			"\t[order]     sort files (ascending, descending)\n" ~
+			"\t{order}     sort files (ascending, descending)\n" ~
 			"\t\t    -asc, -desc\n" ~
-			"\t[orient]    orientation (portrait, landscape)\n" ~
+			"\t{orient}    orientation (portrait, landscape)\n" ~
 			"\t\t    -portrait, -landscape\n" ~
 			"\nDEFAULTS:" ~ 
 			"\n\t[path]     cwd/ (\'/\' or \'\\\\\' path identifier)" ~
 			"\n\t[images]   all *.jpg, *.png in [path]" ~
 			"\n\t[file]     [path]/output.pdf" ~
-			"\n\t[stretch]  -strue" ~
-			"\n\t[order]    -asc" ~
-			"\n\t[orient]   -portrait\n" ~
+			"\n\t{stretch}  -strue" ~
+			"\n\t{order}    -asc" ~
+			"\n\t{orient}   -portrait\n" ~
 			"\nEXAMPLE:\n\timg2pdf ../temp/ img1.png,img2.jpg myImages.pdf\n" ~
 			"\t\t-sfalse -asc -portrait\n" ~
 			"=========================================================\n"
