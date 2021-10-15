@@ -12,20 +12,20 @@ USAGE:
 	img2pdf [path] [images] [file] {options}
 
 OPTIONS:
-	[stretch]   stretch img to PDF page size
+	{stretch}   stretch img to PDF page size
 		    -strue, -sfalse
-	[order]     sort files (ascending, descending)
+	{order}     sort files (ascending, descending)
 		    -asc, -desc
-	[orient]    orientation (portrait, landscape)
+	{orient}    orientation (portrait, landscape)
 		    -portrait, -landscape
 
 DEFAULTS:
 	[path]     cwd/ ('/' or '\\' path identifier)
 	[images]   all *.jpg, *.png in [path]
 	[file]     [path]/output.pdf
-	[stretch]  -strue
-	[order]    -asc
-	[orient]   -portrait
+	{stretch}  -strue
+	{order}    -asc
+	{orient}   -portrait
 
 EXAMPLE:
 	img2pdf ../temp/ img1.png,img2.jpg myImages.pdf
