@@ -7,6 +7,7 @@ import std.file: write, exists, getcwd, dirEntries, SpanMode;
 import std.path: dirSeparator, buildPath, baseName;
 import std.conv: to;
 import std.algorithm: splitter, filter, map, canFind, sort, reverse;
+import std.getopt: getopt, GetoptResult, defaultGetoptPrinter;
 
 // printed
 import printed.canvas: PDFDocument, IRenderingContext2D, Image;
@@ -17,92 +18,80 @@ immutable pageHeightmm = 297.0;
 
 void main(string[] args) {
 	if(args.length < 2) {
-		("\n=========================================================\n" ~
-			"img2pdf  v1.5 -- Image to PDF converter.\n" ~
-			"---------------------------------------------------------\n" ~
-			"USAGE:\n\timg2pdf [path] [images] [file] {options}\n" ~
-			"\nOPTIONS:\n" ~
-			"\t{version}   returns the latest version\n" ~
-			"\t\t    -v, -version\n" ~
-			"\t{stretch}   stretch img to PDF page size\n" ~
-			"\t\t    -strue, -sfalse\n" ~
-			"\t{order}     sort files (ascending, descending)\n" ~
-			"\t\t    -asc, -desc\n" ~
-			"\t{orient}    orientation (portrait, landscape)\n" ~
-			"\t\t    -portrait, -landscape\n" ~
-			"\nDEFAULTS:" ~
-			"\n\t[path]     cwd/ (\'/\' or \'\\\\\' path identifier)" ~
-			"\n\t[images]   all *.jpg, *.png in [path]" ~
-			"\n\t[file]     [path]/output.pdf" ~
-			"\n\t{stretch}  -strue" ~
-			"\n\t{order}    -asc" ~
-			"\n\t{orient}   -portrait\n" ~
-			"\nEXAMPLE:\n\timg2pdf ../temp/ img1.png,img2.jpg myImages.pdf\n" ~
-			"\t\t-sfalse -asc -portrait\n" ~
-			"=========================================================\n"
-		).writefln;
+		writefln("\n#img2pdf: no commands provided! See \'img2pdf -h\' for more info.\n");
 		return;
 	}
 
-	// version
-	if(args.length == 2 && args[1].canFind("-v", "-version")) {
-		writefln("img2pdf version 1.5 -- Image to PDF converter.");
-		return;
-	}
+	// command line boolean arguments
+	bool bversion = false;
+	bool bstretch = true;
+	bool bsortAscending = true;
+	bool borientLandscape = false;
 
-	// remove binary name
-	args = args[1..$];
+	// command line arguments
+	string 
+		path = getcwd(), 
+		images = null, 
+		outputFile = "output.pdf";
+	string[] imageList = null;
 
-	auto findArg = (const string sfind, const string sdefault){
-		auto temp = args.filter!(a => a.canFind(sfind)).array;
-		return (
-			temp.empty ?
-			sdefault :
-			temp[0]
+	// parsing arguments
+	GetoptResult argInfo;
+	try {
+		argInfo = getopt(
+			args,
+			"version|v", "command utility version", &bversion,
+			"stretch|s", "stretch img to PDF page size", &bstretch,
+			"ascending|a", "sort asceding", &bsortAscending,
+			"landscape|l", "landscape PDF page orientation", &borientLandscape,
+			"path|p", "path to images directory", &path,
+			"images|i", "specify image names seperated by \',\'", &images, 
+			"output|o", "output PDF file name", &outputFile
 		);
-	};
 
-	// find path
-	immutable path = findArg(dirSeparator, getcwd);
-	if(!path.exists) {
-		writefln("\n#img2pdf: directory <%s> is does not exist!\n", path);
+		// print help if needed
+		if(argInfo.helpWanted) {
+			defaultGetoptPrinter("\nimg2pdf version v1.6 -- Image to PDF converter.", argInfo.options);
+			writefln("\nEXAMPLE: img2pdf --path=../temp --images=img1.png,img2.jpg --output=myImages.pdf\n");
+			return;
+		}
+
+		// print version
+		if(bversion) {
+			writefln("img2pdf version 1.6 -- Image to PDF converter.");
+			return;
+		}
+
+		// split images
+		imageList = (images is null) ? path.listdir.filter!(
+				a => a.canFind(".jpg", ".jpeg", ".png")
+			).array.sort!("a < b").map!(
+				a => path.buildPath(a)
+			).array : images.splitter(',').map!(a => path.buildPath(a)).array;
+
+		// if no images are found, exit
+		if(imageList.empty) {
+			writefln("\n#img2pdf: no images found!\n");
+			return;
+		}
+
+		// start
+		writefln("\n#img2pdf: starting conversion...\n");
+
+		// convert images
+		img2pdf(
+			outputFile,
+			(bsortAscending ? imageList : imageList.dup.reverse),
+			bstretch,
+			!borientLandscape
+		);
+
+		// end
+		writefln("\n#img2pdf: finished...\n");
+	} catch(Exception e) {
+		writefln("\n#img2pdf: error! %s\n", e.msg);
 		return;
 	}
-
-	// find pdf document name, stretch image to pdf, file sorting order, orientation
-	immutable pdfDocumentName = path.buildPath(findArg(".pdf", "output.pdf"));
-	immutable stretchToPDFSize = findArg("-sfalse", null).empty;
-	immutable sortAscending = findArg("-desc", null).empty;
-	immutable orientPortrait = findArg("-landscape", null).empty;
-
-	// find images
-	auto arg_images = args.filter!(a => a.canFind(".jpg", ".jpeg", ".png")).array;
-	immutable images = (
-		arg_images.empty ?
-		path.listdir.filter!(a => a.canFind(".jpg", ".jpeg", ".png")).array.sort!("a < b").map!(a => path.buildPath(a)).array :
-		arg_images[0].splitter(',').map!(a => path.buildPath(a)).array
-	).to!(immutable string[]);
-
-
-	// if no images are found, exit
-	if(images.empty) {
-		writefln("\n#img2pdf: no images found!\n");
-		return;
-	}
-
-	// start
-	writefln("\n#img2pdf: starting conversion...\n");
-
-	// convert images
-	img2pdf(
-		pdfDocumentName,
-		(sortAscending ? images : images.dup.to!(string[]).reverse),
-		stretchToPDFSize,
-		orientPortrait
-	);
-
-	// end
-	writefln("\n#img2pdf: finished...\n");
 }
 
 /++
@@ -140,16 +129,19 @@ void img2pdf(const string pdfDocumentName, const string[] images, const bool str
 	auto context = cast(IRenderingContext2D)(pdf);
 
 	// prints images to pdf
+	int nfdontExist = 0;	// for tracking when a new page should be added
 	foreach(i, img; images) {
-		// creates a new page
-		if(i > 0) {
-			context.newPage();
-		}
-
 		// checks if image exists
 		if(!img.exists) {
+			nfdontExist++;
+
 			writefln("#img2pdf: (%s) <%s> does not exist! Skipping...", i, img);
 			continue;
+		} else {
+			// create a new page
+			if(i > 0 + nfdontExist) {
+				context.newPage();
+			}
 		}
 
 		// opens an image (skips the image upon failure)
@@ -172,7 +164,7 @@ void img2pdf(const string pdfDocumentName, const string[] images, const bool str
 	}
 
 	// writes data to pdf file
-	writefln("#img2pdf: saving <%s>", pdfDocumentName);
+	writefln("#img2pdf: saving <%s> to cwd.", pdfDocumentName);
 	try {
 		pdfDocumentName.write(pdf.bytes);
 	} catch(Exception e) {
