@@ -27,12 +27,12 @@ void main(string[] args) {
 
 	// command line boolean arguments
 	bool bversion = false;
-	bool bstretch = true;
 	bool bsortAscending = true;
 	bool borientLandscape = false;
 
 	// command line arguments
 	string 
+        printType = "stretch",
 		path = getcwd(), 
 		images = null, 
 		outputFile = "output.pdf";
@@ -44,7 +44,7 @@ void main(string[] args) {
 		argInfo = getopt(
 			args,
 			"version|v", "command utility version", &bversion,
-			"stretch|s", "stretch img to PDF page size", &bstretch,
+            "printType|t", "print type <stretch>, <fill>, <fit> (default: stretch)", &printType,
 			"ascending|a", "sort asceding", &bsortAscending,
 			"landscape|l", "landscape PDF page orientation", &borientLandscape,
 			"path|p", "path to images directory", &path,
@@ -79,18 +79,18 @@ void main(string[] args) {
 		}
 
 		// start
-		writefln("\n#img2pdf: starting conversion...\n");
+		writefln("\n#img2pdf: STARTING conversion...");
 
 		// convert images
 		img2pdf(
 			outputFile,
 			(bsortAscending ? imageList : imageList.dup.reverse),
-			bstretch,
+			printType,
 			!borientLandscape
 		);
 
 		// end
-		writefln("\n#img2pdf: finished...\n");
+		writefln("#img2pdf: FINISHED...\n");
 	} catch(Exception e) {
 		writefln("\n#img2pdf: error! %s\n", e.msg);
 		return;
@@ -105,7 +105,7 @@ Params:
 
 Returns: an array of file names
 +/
-string[] listdir(const string dir) {
+string[] listdir(in string dir) {
     return dirEntries(dir, SpanMode.shallow)
         .filter!(a => a.isFile)
         .map!(a => baseName(a.name))
@@ -118,10 +118,10 @@ Converts images to a PDF file
 Params:
 	pdfDocumentName = pdf file name
 	images = an array image names including the path
-	stretchToPDFSize = stretches image to pdf page width and height, `true` by default
+	printType = fill image to pdf, stretch image to pdf, fit image to pdf
 	orientPortrait = portrait page orientation, `true` by default
 +/
-void img2pdf(const string pdfDocumentName, const string[] images, const bool stretchToPDFSize = true, const bool orientPortrait = true) {
+void img2pdf(in string pdfDocumentName, in string[] images, in string printType = "stretch", in bool orientPortrait = true) {
 	// create a pdf document
 	PDFDocument pdf;
 	if(orientPortrait) {
@@ -157,17 +157,25 @@ void img2pdf(const string pdfDocumentName, const string[] images, const bool str
 		}
 
 		// prints an image to a blank pdf page
-		if(stretchToPDFSize) {
+		if(printType == "stretch") {
 			context.drawImage(currentImg, 0, 0, context.pageWidth, context.pageHeight);
-		} else {
+		} else if(printType == "fill") {
 			context.drawImage(currentImg, 0, 0);
-		}
+		} else if(printType == "fit") {
+            // FIXME: when -l flag is used it works incorrectly
+            immutable fitImgWidth = context.pageWidth > currentImg.width ? currentImg.width : context.pageWidth;
+            immutable fitImgHeight = fitImgWidth / currentImg.width * currentImg.height;
+            context.drawImage(currentImg, 0, 0, fitImgWidth, fitImgHeight);
+        } else { // error: unrecognized option
+            writefln("#img2pdf: Unrecognized option --printType=%s! Only <stretch>, <fill>, <fit> available.", printType);
+            return;
+        }
 
 		writefln("#img2pdf: (%s) <%s> converted!", i, img.splitter(dirSeparator).array[$-1]);
 	}
 
 	// writes data to pdf file
-	writefln("#img2pdf: saving <%s> to cwd.", pdfDocumentName);
+	writefln("#img2pdf: saving <%s>", pdfDocumentName);
 	try {
 		pdfDocumentName.write(pdf.bytes);
 	} catch(Exception e) {
