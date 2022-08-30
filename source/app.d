@@ -12,9 +12,12 @@ import std.getopt: getopt, GetoptResult, defaultGetoptPrinter;
 // printed
 import printed.canvas: PDFDocument, IRenderingContext2D, Image;
 
+// version
+enum v = "1.6";
+
 // pdf document dimensions
-immutable pageWidthmm = 210.0;
-immutable pageHeightmm = 297.0;
+enum pageWidthmm = 210.0;
+enum pageHeightmm = 297.0;
 
 void main(string[] args) {
 	if(args.length < 2) {
@@ -51,14 +54,14 @@ void main(string[] args) {
 
 		// print help if needed
 		if(argInfo.helpWanted) {
-			defaultGetoptPrinter("\nimg2pdf version v1.6 -- Image to PDF converter.", argInfo.options);
+			defaultGetoptPrinter("\nimg2pdf version v" ~ v ~ " -- Image to PDF converter.", argInfo.options);
 			writefln("\nEXAMPLE: img2pdf --path=../temp --images=img1.png,img2.jpg --output=myImages.pdf\n");
 			return;
 		}
 
 		// print version
 		if(bversion) {
-			writefln("img2pdf version 1.6 -- Image to PDF converter.");
+			writefln("img2pdf version " ~ v ~ " -- Image to PDF converter.");
 			return;
 		}
 
