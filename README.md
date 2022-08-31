@@ -5,9 +5,9 @@ Image to PDF conversion utility written in D programming language. [Download](ht
 
 ### Usage
 ```
-img2pdf version v1.6 -- Image to PDF converter.
+img2pdf version v1.7 -- Image to PDF converter.
 -v   --version command utility version
--s   --stretch stretch img to PDF page size
+-t --printType print type <stretch>, <fill>, <fit> (default: stretch)
 -a --ascending sort asceding
 -l --landscape landscape PDF page orientation
 -p      --path path to images directory
@@ -15,7 +15,7 @@ img2pdf version v1.6 -- Image to PDF converter.
 -o    --output output PDF file name
 -h      --help This help information.
 
-EXAMPLE: img2pdf --path=../temp --images=img1.png,img2.jpg --output=myImages.pdf
+EXAMPLE: img2pdf --path=../temp --images=img1.png,img2.jpg --printType=fit --output=myImages.pdf
 ```
 
 ### Building and Installing

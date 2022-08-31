@@ -13,7 +13,7 @@ import std.getopt: getopt, GetoptResult, defaultGetoptPrinter;
 import printed.canvas: PDFDocument, IRenderingContext2D, Image;
 
 // version
-enum v = "1.6";
+enum v = "1.7";
 
 // pdf document dimensions
 enum pageWidthmm = 210.0;
@@ -55,7 +55,7 @@ void main(string[] args) {
 		// print help if needed
 		if(argInfo.helpWanted) {
 			defaultGetoptPrinter("\nimg2pdf version v" ~ v ~ " -- Image to PDF converter.", argInfo.options);
-			writefln("\nEXAMPLE: img2pdf --path=../temp --images=img1.png,img2.jpg --output=myImages.pdf\n");
+			writefln("\nEXAMPLE: img2pdf --path=../temp --images=img1.png,img2.jpg --printType=fit --output=myImages.pdf\n");
 			return;
 		}
 
@@ -84,9 +84,9 @@ void main(string[] args) {
 		// convert images
 		img2pdf(
 			outputFile,
-			(bsortAscending ? imageList : imageList.dup.reverse),
+			bsortAscending ? imageList : imageList.dup.reverse,
 			printType,
-			!borientLandscape
+			borientLandscape
 		);
 
 		// end
@@ -119,12 +119,12 @@ Params:
 	pdfDocumentName = pdf file name
 	images = an array image names including the path
 	printType = fill image to pdf, stretch image to pdf, fit image to pdf
-	orientPortrait = portrait page orientation, `true` by default
+	orientLandscape = landscape page orientation, `false` by default
 +/
-void img2pdf(in string pdfDocumentName, in string[] images, in string printType = "stretch", in bool orientPortrait = true) {
+void img2pdf(in string pdfDocumentName, in string[] images, in string printType = "stretch", in bool orientLandscape = false) {
 	// create a pdf document
 	PDFDocument pdf;
-	if(orientPortrait) {
+	if(!orientLandscape) {
 		pdf = new PDFDocument(pageWidthmm, pageHeightmm);
 	} else {
 		pdf = new PDFDocument(pageHeightmm, pageWidthmm);
@@ -162,10 +162,15 @@ void img2pdf(in string pdfDocumentName, in string[] images, in string printType 
 		} else if(printType == "fill") {
 			context.drawImage(currentImg, 0, 0);
 		} else if(printType == "fit") {
-            // FIXME: when -l flag is used it works incorrectly
-            immutable fitImgWidth = context.pageWidth > currentImg.width ? currentImg.width : context.pageWidth;
-            immutable fitImgHeight = fitImgWidth / currentImg.width * currentImg.height;
-            context.drawImage(currentImg, 0, 0, fitImgWidth, fitImgHeight);
+            if(!orientLandscape) {
+                immutable fitImgWidth = context.pageWidth > currentImg.printWidth ? currentImg.printWidth : context.pageWidth;
+                immutable fitImgHeight = fitImgWidth / currentImg.printWidth * currentImg.printHeight;
+                context.drawImage(currentImg, 0, 0, fitImgWidth, fitImgHeight);
+            } else {
+                immutable fitImgHeight = context.pageHeight > currentImg.printHeight ? currentImg.printHeight : context.pageHeight;
+                immutable fitImgWidth = fitImgHeight / currentImg.printHeight * currentImg.printWidth;
+                context.drawImage(currentImg, 0, 0, fitImgWidth, fitImgHeight);
+            }
         } else { // error: unrecognized option
             writefln("#img2pdf: Unrecognized option --printType=%s! Only <stretch>, <fill>, <fit> available.", printType);
             return;
