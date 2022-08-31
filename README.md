@@ -1,7 +1,7 @@
 # img2pdf
 Image to PDF conversion utility written in D programming language. [Download](https://github.com/rillki/img2pdf/releases) the precompiled binary or build it yourself down below.
 
-<img src="assets/screenshot.png" width="720">
+<img src="assets/screenshot.png">
 
 ### Usage
 ```
