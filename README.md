@@ -1,7 +1,7 @@
 # img2pdf
 Image to PDF conversion utility written in D programming language. [Download](https://github.com/rillki/img2pdf/releases) the precompiled binary or build it yourself down below.
 
-<img src="assets/screenshot.jpeg">
+<img src="assets/screenshot.png" width="720">
 
 ### Usage
 ```
@@ -24,7 +24,7 @@ EXAMPLE: img2pdf --path=../temp --images=img1.png,img2.jpg --printType=fit --out
 * [DUB](https://dub.pm) package manager
 
 ##### Note for Windows 10 users
-When downloading DMD, choose `exe`. It is the official D `installer` that will install both `DMD` and `DUB` to your system. 
+When downloading DMD, choose `exe`. It is the official D `installer` that will install both `DMD` and `DUB` to your system.
 
 #### Dependencies (managed by DUB automatically)
 * [printed](https://github.com/AuburnSounds/printed)
@@ -43,21 +43,9 @@ cd img2pdf
 dub --build=release
 ```
 
-Your will find the binary in the `bin/` folder. Add it to your `PATH` to use it freely. 
+Your will find the binary in the `bin/` folder. Add it to your `PATH` to use it freely.
 
 Here is an article on how to add an executable binary to `PATH` on [Windows 10](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53).
 
 ### LICENSE
 All code is licensed under [MIT](https://github.com/rillki/img2pdf/blob/main/LICENSE) license.
-
-
-
-
-
-
-
-
-
-
-
-
