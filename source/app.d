@@ -1,3 +1,4 @@
+// built with DMD v2.100
 module app;
 
 // phobos
@@ -14,6 +15,17 @@ import printed.canvas: PDFDocument, IRenderingContext2D, Image;
 
 // version
 enum v = "1.7";
+
+// page size
+enum PageSize: float[2] {
+    A1 = [594, 841],
+    A2 = [420, 594],
+    A3 = [297, 420],
+    A4 = [210, 297],
+    A5 = [148, 210],
+    A6 = [105, 148],
+    A7 = [74, 105]
+}
 
 // pdf document dimensions
 enum pageWidthmm = 210.0;
@@ -33,9 +45,10 @@ void main(string[] args) {
 	// command line arguments
 	string 
         printType = "stretch",
-		path = getcwd(), 
-		images = null, 
-		outputFile = "output.pdf";
+        path = getcwd(), 
+        images = null,
+        pageSize = "A4",
+        outputFile = "output.pdf";
 	string[] imageList = null;
 
 	// parsing arguments
@@ -44,11 +57,12 @@ void main(string[] args) {
 		argInfo = getopt(
 			args,
 			"version|v", "command utility version", &bversion,
-            "printType|t", "print type <stretch>, <fill>, <fit> (default: stretch)", &printType,
+            "printType|t", "print type <stretch, fill, fit> (default: stretch)", &printType,
 			"ascending|a", "sort asceding", &bsortAscending,
 			"landscape|l", "landscape PDF page orientation", &borientLandscape,
 			"path|p", "path to images directory", &path,
 			"images|i", "specify image names seperated by \',\'", &images, 
+			"size|s", "specify page size <A1, ..., A7> (default: A4)", &pageSize, 
 			"output|o", "output PDF file name", &outputFile
 		);
 
@@ -61,8 +75,10 @@ void main(string[] args) {
 
 		// print version
 		if(bversion) {
-			writefln("img2pdf version " ~ v ~ " -- Image to PDF converter.");
-			return;
+            import std.compiler: version_major, version_minor;
+            writefln("img2pdf version " ~ v ~ " -- Image to PDF converter.");
+            writefln("Built with %s v%s.%s on %s", __VENDOR__, version_major, version_minor, __DATE__);
+            return;
 		}
 
 		// split images
