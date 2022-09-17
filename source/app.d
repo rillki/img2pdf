@@ -65,7 +65,7 @@ void main(string[] args) {
 		// print help if needed
 		if(argInfo.helpWanted) {
 			defaultGetoptPrinter("\nimg2pdf version v" ~ v ~ " -- Image to PDF converter.", argInfo.options);
-			writefln("\nEXAMPLE: img2pdf --path=../temp --images=img1.png,img2.jpg --printType=fit --output=myImages.pdf\n");
+			writefln("\nEXAMPLE: img2pdf --path=../temp --images=img1.png,img2.jpg --printType=fit --size=A4 --output=myImages.pdf\n");
 			return;
 		}
 
