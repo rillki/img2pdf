@@ -14,9 +14,9 @@ import std.getopt: getopt, GetoptResult, defaultGetoptPrinter;
 import printed.canvas: PDFDocument, IRenderingContext2D, Image;
 
 // version
-enum v = "1.7";
+enum v = "1.8";
 
-// page size
+// page size in millimeters
 enum PageSize: float[2] {
     A1 = [594, 841],
     A2 = [420, 594],
@@ -27,10 +27,6 @@ enum PageSize: float[2] {
     A7 = [74, 105]
 }
 
-// pdf document dimensions
-enum pageWidthmm = 210.0;
-enum pageHeightmm = 297.0;
-
 void main(string[] args) {
 	if(args.length < 2) {
 		writefln("\n#img2pdf: no commands provided! See \'img2pdf -h\' for more info.\n");
@@ -38,17 +34,17 @@ void main(string[] args) {
 	}
 
 	// command line boolean arguments
-	bool bversion = false;
-	bool bsortAscending = true;
-	bool borientLandscape = false;
+	bool opt_version = false;
+	bool opt_sortAscending = true;
+	bool opt_orientLandscape = false;
 
 	// command line arguments
 	string 
-        printType = "stretch",
-        path = getcwd(), 
-        images = null,
-        pageSize = "A4",
-        outputFile = "output.pdf";
+        opt_printType = "stretch",
+        opt_path = getcwd(), 
+        opt_images = null,
+        opt_pageSize = "A4",
+        opt_outputFile = "output.pdf";
 	string[] imageList = null;
 
 	// parsing arguments
@@ -56,14 +52,14 @@ void main(string[] args) {
 	try {
 		argInfo = getopt(
 			args,
-			"version|v", "command utility version", &bversion,
-            "printType|t", "print type <stretch, fill, fit> (default: stretch)", &printType,
-			"ascending|a", "sort asceding", &bsortAscending,
-			"landscape|l", "landscape PDF page orientation", &borientLandscape,
-			"path|p", "path to images directory", &path,
-			"images|i", "specify image names seperated by \',\'", &images, 
-			"size|s", "specify page size <A1, ..., A7> (default: A4)", &pageSize, 
-			"output|o", "output PDF file name", &outputFile
+			"version|v", "command utility version", &opt_version,
+            "printType|t", "print type <stretch, fill, fit> (default: stretch)", &opt_printType,
+			"ascending|a", "sort asceding", &opt_sortAscending,
+			"landscape|l", "landscape PDF page orientation", &opt_orientLandscape,
+			"path|p", "path to images directory", &opt_path,
+			"images|i", "specify image names seperated by \',\'", &opt_images, 
+			"size|s", "specify page size <A1, ..., A7> (default: A4)", &opt_pageSize, 
+			"output|o", "output PDF file name", &opt_outputFile
 		);
 
 		// print help if needed
@@ -74,7 +70,7 @@ void main(string[] args) {
 		}
 
 		// print version
-		if(bversion) {
+		if(opt_version) {
             import std.compiler: version_major, version_minor;
             writefln("img2pdf version " ~ v ~ " -- Image to PDF converter.");
             writefln("Built with %s v%s.%s on %s", __VENDOR__, version_major, version_minor, __DATE__);
@@ -82,11 +78,11 @@ void main(string[] args) {
 		}
 
 		// split images
-		imageList = (images is null) ? path.listdir.filter!(
+		imageList = (opt_images is null) ? opt_path.listdir.filter!(
 				a => a.canFind(".jpg", ".jpeg", ".png")
 			).array.sort!("a < b").map!(
-				a => path.buildPath(a)
-			).array : images.splitter(',').map!(a => path.buildPath(a)).array;
+				a => opt_path.buildPath(a)
+			).array : opt_images.splitter(',').map!(a => opt_path.buildPath(a)).array;
 
 		// if no images are found, exit
 		if(imageList.empty) {
@@ -99,10 +95,11 @@ void main(string[] args) {
 
 		// convert images
 		img2pdf(
-			outputFile,
-			bsortAscending ? imageList : imageList.dup.reverse,
-			printType,
-			borientLandscape
+			opt_outputFile,
+            opt_pageSize.convStringToPageSize,
+			opt_sortAscending ? imageList : imageList.dup.reverse,
+			opt_printType,
+			opt_orientLandscape
 		);
 
 		// end
@@ -134,16 +131,16 @@ Converts images to a PDF file
 Params:
 	pdfDocumentName = pdf file name
 	images = an array image names including the path
-	printType = fill image to pdf, stretch image to pdf, fit image to pdf
+	opt_printType = fill image to pdf, stretch image to pdf, fit image to pdf
 	orientLandscape = landscape page orientation, `false` by default
 +/
-void img2pdf(in string pdfDocumentName, in string[] images, in string printType = "stretch", in bool orientLandscape = false) {
-	// create a pdf document
+void img2pdf(in string pdfDocumentName, in PageSize pageSize, in string[] images, in string printType = "stretch", in bool orientLandscape = false) {
+    // create a pdf document
 	PDFDocument pdf;
 	if(!orientLandscape) {
-		pdf = new PDFDocument(pageWidthmm, pageHeightmm);
+		pdf = new PDFDocument(pageSize[0], pageSize[1]);
 	} else {
-		pdf = new PDFDocument(pageHeightmm, pageWidthmm);
+		pdf = new PDFDocument(pageSize[1], pageSize[0]);
 	}
 	auto context = cast(IRenderingContext2D)(pdf);
 
@@ -188,7 +185,7 @@ void img2pdf(in string pdfDocumentName, in string[] images, in string printType 
                 context.drawImage(currentImg, 0, 0, fitImgWidth, fitImgHeight);
             }
         } else { // error: unrecognized option
-            writefln("#img2pdf: Unrecognized option --printType=%s! Only <stretch>, <fill>, <fit> available.", printType);
+            writefln("#img2pdf: Unrecognized option --opt_printType=%s! Only <stretch>, <fill>, <fit> available.", printType);
             return;
         }
 
@@ -203,3 +200,31 @@ void img2pdf(in string pdfDocumentName, in string[] images, in string printType 
 		writefln("#img2pdf: failed to save <%s>; %s", pdfDocumentName, e.msg);
 	}
 }
+
+PageSize convStringToPageSize(in string pageSize) {
+    switch(pageSize) {
+        case "A1":
+            return PageSize.A1;
+        case "A2":
+            return PageSize.A2;
+        case "A3":
+            return PageSize.A3;
+        case "A4":
+            return PageSize.A4;
+        case "A5":
+            return PageSize.A5;
+        case "A6":
+            return PageSize.A6;
+        case "A7":
+            return PageSize.A7;
+        default:
+            return PageSize.A4;
+    }
+}
+
+
+
+
+
+
+
