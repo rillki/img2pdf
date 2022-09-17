@@ -201,6 +201,7 @@ void img2pdf(in string pdfDocumentName, in PageSize pageSize, in string[] images
 	}
 }
 
+/// Converts a string to PageSize enum
 PageSize convStringToPageSize(in string pageSize) {
     switch(pageSize) {
         case "A1":
