@@ -28,8 +28,8 @@ enum PageSize: float[2] {
 }
 
 void main(string[] args) {
-	if(args.length < 2) {
-		writefln("\n#img2pdf: no commands provided! See \'img2pdf -h\' for more info.\n");
+	if(args.length < 2 || args[1][0] != '-') {
+		writefln("\n#img2pdf: incorrect or no commands provided! See \'img2pdf -h\' for more info.\n");
 		return;
 	}
 
