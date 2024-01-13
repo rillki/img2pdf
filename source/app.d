@@ -24,7 +24,8 @@ enum PageSize: float[2] {
     A4 = [210, 297],
     A5 = [148, 210],
     A6 = [105, 148],
-    A7 = [74, 105]
+    A7 = [74, 105],
+    Letter = [215.9, 279.4],
 }
 
 void main(string[] args) {
@@ -218,6 +219,8 @@ PageSize convStringToPageSize(in string pageSize) {
             return PageSize.A6;
         case "A7":
             return PageSize.A7;
+        case "Letter":
+            return PageSize.Letter;
         default:
             return PageSize.A4;
     }
