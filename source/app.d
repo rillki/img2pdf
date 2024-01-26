@@ -131,8 +131,9 @@ Converts images to a PDF file
 
 Params:
     pdfDocumentName = pdf file name
+    pageSize = pdf page size in millimeters
     images = an array image names including the path
-    opt_printType = fill image to pdf, stretch image to pdf, fit image to pdf
+    printType = fill image to pdf, stretch image to pdf, fit image to pdf
     orientLandscape = landscape page orientation, `false` by default
 +/
 void img2pdf(in string pdfDocumentName, in PageSize pageSize, in string[] images, in string printType = "stretch", in bool orientLandscape = false) {
