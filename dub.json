@@ -4,6 +4,7 @@
 	],
 	"copyright": "Copyright © 2021, rillki",
     "targetPath": "bin",
+    "targetType": "executable",
     "dependencies": {
 		"printed": "~>1.1.3"
 	},

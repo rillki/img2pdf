@@ -2,8 +2,8 @@
 	"fileVersion": 1,
 	"versions": {
 		"binrange": "1.0.3",
-		"dplug": "12.7.12",
-		"intel-intrinsics": "1.10.4",
+		"dplug": "12.8.4",
+		"intel-intrinsics": "1.11.18",
 		"isfreedesktop": "0.1.1",
 		"printed": "1.1.4",
 		"standardpaths": "0.8.2",
